@@ -48,20 +48,13 @@ func maxChunks(data []int) int {
 		return 0
 	}
 	if len(data) < CHUNKS {
-		maxi := data[0]
-		for _, v := range data {
-			if v > maxi {
-				maxi = v
-			}
-		}
-		return maxi
+		return maximum(data)
 	}
 
 	var wg sync.WaitGroup
-	var mu sync.Mutex
 
 	size := len(data) / CHUNKS
-	var eightMax []int
+	eightMax := make([]int, CHUNKS)
 
 	for i := 0; i < CHUNKS; i++ {
 		wg.Add(1)
@@ -73,26 +66,12 @@ func maxChunks(data []int) int {
 
 		go func(st, end int) {
 			defer wg.Done()
-			maxNum := data[st]
-			for _, v := range data[st:end] {
-				if v > maxNum {
-					maxNum = v
-				}
-			}
-			mu.Lock()
-			eightMax = append(eightMax, maxNum)
-			mu.Unlock()
+			eightMax[i] = maximum(data[st:end])
 		}(st, end)
 	}
 	wg.Wait()
 
-	maxi := eightMax[0]
-	for _, v := range eightMax {
-		if v > maxi {
-			maxi = v
-		}
-	}
-	return maxi
+	return maximum(eightMax)
 }
 
 func main() {
@@ -112,6 +91,6 @@ func main() {
 	// ваш код здесь
 	start = time.Now()
 	maxNumber = maxChunks(list)
-	elapsed = time.Now().Sub(start).Microseconds()
+	elapsed = time.Since(start).Microseconds()
 	fmt.Printf("Максимальное значение элемента: %d\nВремя поиска: %d ms\n", maxNumber, elapsed)
 }
